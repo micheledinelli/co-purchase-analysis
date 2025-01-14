@@ -1,10 +1,10 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2025.1.1)  14 JAN 2025 17:49
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2024) (preloaded format=pdflatex 2025.1.1)  14 JAN 2025 17:57
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
  %&-line parsing enabled.
-**scalable.tex
-(./scalable.tex
+**report.tex
+(./report.tex
 LaTeX2e <2024-11-01> patch level 1
 L3 programming layer <2024-12-09>
 (./IEEEtran.cls
@@ -405,8 +405,8 @@ File: l3backend-pdftex.def 2024-05-08 L3 backend support: PDF output (pdfTeX)
 \l__color_backend_stack_int=\count305
 \l__pdf_internal_box=\box56
 )
-(./scalable.aux)
-\openout1 = `scalable.aux'.
+(./report.aux)
+\openout1 = `report.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 19.
 LaTeX Font Info:    ... okay on input line 19.
@@ -452,9 +452,9 @@ e
 ))
 Package hyperref Info: Link coloring OFF on input line 19.
 
-(./scalable.out) (./scalable.out)
+(./report.out) (./report.out)
 \@outlinefile=\write3
-\openout3 = `scalable.out'.
+\openout3 = `report.out'.
 
 LaTeX Font Info:    Calculating math sizes for size <11> on input line 29.
 LaTeX Font Info:    Trying to load font information for U+msa on input line 29.
@@ -514,22 +514,22 @@ Before submitting the final camera ready copy, remember to:
 
 [3
 
-] (./scalable.aux)
+] (./report.aux)
  ***********
 LaTeX2e <2024-11-01> patch level 1
 L3 programming layer <2024-12-09>
  ***********
-Package rerunfilecheck Info: File `scalable.out' has not changed.
+Package rerunfilecheck Info: File `report.out' has not changed.
 (rerunfilecheck)             Checksum: AE9A3C8996FFF3C8224B528A36003734;2041.
  ) 
 Here is how much of TeX's memory you used:
  11410 strings out of 473254
- 176298 string characters out of 5720015
- 599513 words of memory out of 5000000
+ 176260 string characters out of 5720015
+ 599503 words of memory out of 5000000
  34439 multiletter control sequences out of 15000+600000
  604418 words of font info for 127 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,11n,79p,583b,441s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,11n,79p,581b,441s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </opt/texlive/texdir/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></o
 pt/texlive/texdir/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></opt/tex
 live/texdir/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></opt/texlive/te
@@ -540,7 +540,7 @@ nts/type1/urw/courier/ucrr8a.pfb></opt/texlive/texdir/texmf-dist/fonts/type1/ur
 w/times/utmb8a.pfb></opt/texlive/texdir/texmf-dist/fonts/type1/urw/times/utmbi8
 a.pfb></opt/texlive/texdir/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></opt/te
 xlive/texdir/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on scalable.pdf (3 pages, 136338 bytes).
+Output written on report.pdf (3 pages, 136338 bytes).
 PDF statistics:
  168 PDF objects out of 1000 (max. 8388607)
  138 compressed objects within 2 object streams
