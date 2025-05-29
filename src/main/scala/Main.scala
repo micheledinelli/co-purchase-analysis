@@ -1,22 +1,24 @@
 import org.apache.spark.HashPartitioner
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SparkSession
-import utils.Timer.time
 
 object Main {
+
   private def coPurchaseAnalysisSpark(in: String, out: String): Unit = {
     val spark = SparkSession.builder()
       .appName("cpa")
       .master("local[*]")
-//      .config("spark.driver.memory", "8g")
-//      .config("spark.executor.memory", "8g")
-//      .config("spark.sql.shuffle.partitions", "200")
-//      .config("spark.memory.fraction", "0.8")
+      .config("spark.executor.memory", "6g")
+      .config("spark.executor.cores", "4")
+      .config("spark.driver.memory", "4g")
+      .config("spark.executor.instances", "4")
       .getOrCreate()
 
     val cores = spark.conf.get("spark.executor.cores", "4").toInt
     val nodes = spark.conf.get("spark.executor.instances", "4").toInt
-    val numPartitions = math.max(cores * nodes * 2, spark.sparkContext.defaultParallelism * 2)
+    val partitions =
+      math.max(cores * nodes * 2,
+        spark.sparkContext.defaultParallelism * 2)
 
     val rawData: RDD[(Int, Int)] = spark.sparkContext
       .textFile(in)
@@ -25,25 +27,41 @@ object Main {
         (parts(0).toInt, parts(1).toInt)
       })
 
-    val partitionedData = rawData.partitionBy(new HashPartitioner(numPartitions))
-    val groupedData = partitionedData.groupByKey()
+    val hashPartitionedData: RDD[(Int, Int)] = rawData.partitionBy(new HashPartitioner(partitions))
+    val groupedByOrder: RDD[(Int, Iterable[Int])] = hashPartitionedData.groupByKey()
 
-    val productPairs: RDD[((Int, Int), Int)] = groupedData.
-      flatMap { case
-        (_, products) =>
-        val productList = products.toList
+    val productPairs: RDD[((Int, Int), Int)] = groupedByOrder.flatMap {
+      case (_, products) =>
+        val productList = products.toList.distinct
         for {
           i <- productList
           j <- productList if i < j
         } yield ((i, j), 1)
-      }
+    }
 
-    val repartitionedPairs = productPairs.partitionBy(new HashPartitioner(numPartitions))
+    //    groupedByOrder.mapPartitions(iter => {
+    //      val pairBuffer = scala.collection.mutable.ListBuffer[((Int, Int), Int)]()
+    //
+    //      iter.foreach { case (_, products) =>
+    //        val productList = products.toSet.toArray.sorted
+    //        for {
+    //          i <- productList.indices
+    //          j <- (i + 1) until productList.length
+    //        } {
+    //          pairBuffer += (((productList(i), productList(j)), 1))
+    //        }
+    //      }
+    //
+    //      pairBuffer.iterator
+    //    })
 
-    val coPurchaseCounts = repartitionedPairs.reduceByKey(_ + _)
+    val coPurchaseCounts: RDD[((Int, Int), Int)] = productPairs.reduceByKey(_ + _)
+
     coPurchaseCounts
-      .map { case ((p1, p2), count) => s"$p1,$p2,$count" }
-      .repartition(1)
+      .map {
+        case ((p1, p2), c) => s"$p1,$p2,$c"
+      }
+      .coalesce(1)
       .saveAsTextFile(out)
 
     spark.stop()
@@ -54,36 +72,10 @@ object Main {
     val out: String = if (args.length == 2) args(1) else "./output"
 
     if (args.length != 2) {
-      System.out.printf("Invalid number of arguments: %d\nTwo required: 1: <input file> 2: <output file>", args.length)
-      System.out.printf("Using defaults <%s> <%s>", in, out)
+      println(f"Invalid number of arguments: ${args.length}%d\nTwo required: 1: <input file> 2: <output file>")
+      println(f"Using defaults <${in}%s> <${out}%s>")
     }
 
-    time(coPurchaseAnalysisSpark(in, out))
+    coPurchaseAnalysisSpark(in, out)
   }
 }
-
-//object Main extends App {
-//
-//  val inputFile = "./sherlock.txt"
-//
-//  private def wordCountScala(fileName: String) = {
-//    val source = Source.fromFile(fileName)
-//    val allWords = source.getLines.toList.
-//      flatMap(line => line.split(" ")).
-//      map(w => (w.filter(_.isLetter).toUpperCase))
-//
-//    val emptyMap = Map[String, Int]() withDefaultValue 0
-//    allWords.foldLeft(emptyMap)((a, w) => (a) + (w -> (a(w) + 1)))
-//  }
-//
-//  private def wordCountSpark(fileName: String) = {
-//    val conf = new SparkConf().setAppName("wordCount").
-//      setMaster("local[6]")
-//    val allWordsWithOne = new SparkContext(conf).textFile(fileName).
-//      flatMap(line => line.split(" ")).
-//      map(w => (w.filter(_.isLetter).toUpperCase, 1))
-//    allWordsWithOne.reduceByKey((x, y) => x + y).collectAsMap()
-//  }
-//  time(wordCountScala(inputFile))
-//  time(wordCountSpark(inputFile))
-//}

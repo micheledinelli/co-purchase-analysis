@@ -1,4 +1,4 @@
-scalaVersion := "2.13.15"
+scalaVersion := "2.12.18"
 
 name := "co-purchase-analysis"
 organization := "edu.unibo.cs.scp"
