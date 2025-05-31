@@ -37,9 +37,6 @@ Then run the project from within the sbt shell
 run <opt_input_file> <opt_output_file>
 ```
 
-`opt_input_file` and `opt_output_file` are optional parameters. 
-The default values for these parameters are `./test.csv` and `./output`.  
-
 [test.csv](./test.csv) is a way smaller version of the original dataset and it's used only for testing purposes.
 
 ### Option 2
@@ -50,7 +47,7 @@ Submit a Spark job by compiling the project using the command
 sbt clean compile package
 ```
 
-this produce a Jar under `/target` directory, then submit it to Spark with
+This produces a Jar under `/target`. Submit it to Spark with
 
 ```sh
 spark-submit target/<JAR_NAME> <opt_input_file> <opt_output_file>

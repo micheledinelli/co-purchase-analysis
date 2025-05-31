@@ -8,17 +8,11 @@ object Main {
     val spark = SparkSession.builder()
       .appName("cpa")
       .master("local[*]")
-      .config("spark.executor.memory", "6g")
-      .config("spark.executor.cores", "4")
-      .config("spark.driver.memory", "4g")
-      .config("spark.executor.instances", "4")
+      .config("spark.eventLog.enabled", "true")
+      .config("spark.eventLog.dir", "/tmp/spark-events")
       .getOrCreate()
 
-    val cores = spark.conf.get("spark.executor.cores", "4").toInt
-    val nodes = spark.conf.get("spark.executor.instances", "4").toInt
-    val partitions =
-      math.max(cores * nodes * 2,
-        spark.sparkContext.defaultParallelism * 2)
+    val partitions = spark.sparkContext.defaultParallelism * 2
 
     val rawData: RDD[(Int, Int)] = spark.sparkContext
       .textFile(in)
@@ -32,35 +26,17 @@ object Main {
 
     val productPairs: RDD[((Int, Int), Int)] = groupedByOrder.flatMap {
       case (_, products) =>
-        val productList = products.toList.distinct
+        val productList = products.toSet.toIndexedSeq
         for {
           i <- productList
           j <- productList if i < j
         } yield ((i, j), 1)
     }
 
-    //    groupedByOrder.mapPartitions(iter => {
-    //      val pairBuffer = scala.collection.mutable.ListBuffer[((Int, Int), Int)]()
-    //
-    //      iter.foreach { case (_, products) =>
-    //        val productList = products.toSet.toArray.sorted
-    //        for {
-    //          i <- productList.indices
-    //          j <- (i + 1) until productList.length
-    //        } {
-    //          pairBuffer += (((productList(i), productList(j)), 1))
-    //        }
-    //      }
-    //
-    //      pairBuffer.iterator
-    //    })
-
     val coPurchaseCounts: RDD[((Int, Int), Int)] = productPairs.reduceByKey(_ + _)
 
     coPurchaseCounts
-      .map {
-        case ((p1, p2), c) => s"$p1,$p2,$c"
-      }
+      .map { case ((p1, p2), c) => s"$p1,$p2,$c" }
       .coalesce(1)
       .saveAsTextFile(out)
 
@@ -68,8 +44,9 @@ object Main {
   }
 
   def main(args: Array[String]): Unit = {
-    val in = if (args.nonEmpty) args(0) else "./test.csv"
-    val out: String = if (args.length == 2) args(1) else "./output"
+    val bucketName = "cpa-scp-bucket"
+    val in = if (args.nonEmpty) args(0) else "gs://" + bucketName + "/order_products.csv"
+    val out = if (args.length == 2) args(1) else "gs://" + bucketName + "/output"
 
     if (args.length != 2) {
       println(f"Invalid number of arguments: ${args.length}%d\nTwo required: 1: <input file> 2: <output file>")
