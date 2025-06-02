@@ -6,9 +6,9 @@
 [![sbt](https://img.shields.io/badge/sbt-1.10.11-default.svg?style=plain)]()
 ![gc](https://img.shields.io/badge/Google%20Cloud-4285F4.svg?style=plain&logo=Google-Cloud&logoColor=white)
 
-[//]: # (&#40;![databricks]&#40;https://img.shields.io/badge/Databricks-FF3621.svg?style=plain&logo=Databricks&logoColor=white&#41;&#41;)
-
 Project realized for Scalable and Cloud Programming (81942) university course @unibo.
+
+Documentation is available [here](https://micheledinelli.github.io/co-purchase-analysis/report.pdf).
 
 ## How to Run Locally
 
@@ -34,10 +34,10 @@ sbt
 Then run the project from within the sbt shell
 
 ```sh
-run <opt_input_file> <opt_output_file>
+run <input_file> <output_directory>
 ```
 
-[test.csv](./test.csv) is a way smaller version of the original dataset and it's used only for testing purposes.
+[test.csv](order_products_example.csv) is a way smaller version of the original dataset and it's used only for testing purposes.
 
 ### Option 2
 
@@ -47,12 +47,34 @@ Submit a Spark job by compiling the project using the command
 sbt clean compile package
 ```
 
-This produces a Jar under `/target`. Submit it to Spark with
+This produces a Jar under `/target/scala-2.12`. Submit it to Spark with
 
 ```sh
-spark-submit target/<JAR_NAME> <opt_input_file> <opt_output_file>
+spark-submit <JAR_PATH> <input_file> <output_dir>
 ```
 
 ---
 
-Both options will start Spark UI on [localhost:4040](http://localhost:4040/) if available.
+Both options will start Spark UI on [localhost:4040](http://localhost:4040/).
+
+## Dataproc Testing
+
+Set-up an `.env` file with these 3 variables (refer to [env.example](.env.example)):
+
+- `PROJECT`
+- `REGION`
+- `BUCKET`
+
+These can be exported using the command `. ./export-env.sh`, or manually.
+
+Create a bucket on Google Cloud and provide a .csv file following the format of [order_products_example.csv](./order_products_example.csv). 
+Ensure that your service account has the roles `Dataproc Worker` and `Storage Admin`.
+
+Then run 
+
+1. `./update-jar.sh` this will compile, package and upload a jar file to Google Cloud buckets.
+2. `./init-cluster.sh <N>` this will initialize a cluster with `<N>` workers.
+3. `./submit.job.sh <CLUSTER>` this will submit a job to a `<CLUSTER>` using the exported `BUCKET` variable as data-source for the jar and the dataset 
+4. `./clean.sh <CLUSTER> [--buckets]` this will delete the cluster and optionally ALL the buckets.
+
+
