@@ -6,3 +6,5 @@ output/
 project/
 
 order_products.csv
+
+.env
