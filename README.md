@@ -57,6 +57,18 @@ spark-submit <JAR_PATH> <input_file> <output_dir>
 
 Both options will start Spark UI on [localhost:4040](http://localhost:4040/).
 
+### How to Check Results
+
+```shell
+awk -F, 'NR == 1 || $3 > max { max = $3; line = $0 } END { print line }' <output_dir>/part-00000
+
+# this will output something like
+# 13176,47209,62341
+
+# using the sample dataset the command should yield
+# 12,14,3
+```
+
 ## Dataproc Testing
 
 Set-up an `.env` file with these 3 variables (refer to [env.example](.env.example)):
