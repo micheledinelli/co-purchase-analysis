@@ -8,25 +8,35 @@ object Main {
     val spark = SparkSession.builder()
       .appName("cpa")
       .master("local[*]")
+//      .config("spark.executor.memory", "6g")
+//      .config("spark.executor.cores", "4")
+//      .config("spark.driver.memory", "4g")
+//      .config("spark.executor.instances", "4")
       .config("spark.eventLog.enabled", "true")
       .config("spark.eventLog.dir", "/tmp/spark-events")
       .getOrCreate()
 
-    val partitions = spark.sparkContext.defaultParallelism * 2
+    val cores = spark.conf.get("spark.executor.cores", "4").toInt
+    val nodes = spark.conf.get("spark.executor.instances", "4").toInt
+    val partitions =
+      math.max(cores * nodes * 2,
+        spark.sparkContext.defaultParallelism * 2)
 
-    val rawData: RDD[(Int, Int)] = spark.sparkContext
+    val startTime = System.nanoTime()
+
+    val data: RDD[(Int, Int)] = spark.sparkContext
       .textFile(in)
       .map(line => {
         val parts = line.split(",")
         (parts(0).toInt, parts(1).toInt)
       })
 
-    val hashPartitionedData: RDD[(Int, Int)] = rawData.partitionBy(new HashPartitioner(partitions))
+    val hashPartitionedData: RDD[(Int, Int)] = data.partitionBy(new HashPartitioner(partitions))
     val groupedByOrder: RDD[(Int, Iterable[Int])] = hashPartitionedData.groupByKey()
 
     val productPairs: RDD[((Int, Int), Int)] = groupedByOrder.flatMap {
       case (_, products) =>
-        val productList = products.toSet.toIndexedSeq
+        val productList = products.toSet
         for {
           i <- productList
           j <- productList if i < j
@@ -40,11 +50,16 @@ object Main {
       .coalesce(1)
       .saveAsTextFile(out)
 
+    val endTime = System.nanoTime()
+    val totalTime = (endTime - startTime) / 1e9
+
+    println(f"Elapsed time: $totalTime%.2f seconds")
+
     spark.stop()
   }
 
   def main(args: Array[String]): Unit = {
-    val bucketName = "cpa-scp-bucket"
+    val bucketName = "cpa-scp-usa"
     val in = if (args.nonEmpty) args(0) else "gs://" + bucketName + "/order_products.csv"
     val out = if (args.length == 2) args(1) else "gs://" + bucketName + "/output"
 
