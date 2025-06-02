@@ -2,7 +2,7 @@ scalaVersion := "2.12.18"
 
 name := "co-purchase-analysis"
 organization := "edu.unibo.cs.scp"
-version := "0.0.1"
+version := "1.0.0"
 
 val sparkVersion = "3.5.5"
 
