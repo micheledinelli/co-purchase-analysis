@@ -36,11 +36,6 @@ M.~Zaharia, R.~S. Xin, P.~Wendell, T.~Das, M.~Armbrust, A.~Dave, X.~Meng,
   [Online]. Available: \url{https://doi.org/10.1145/2934664}
 \BIBentrySTDinterwordspacing
 
-\bibitem{dataproc}
-\BIBentryALTinterwordspacing
-Google. [Online]. Available: \url{https://cloud.google.com/dataproc}
-\BIBentrySTDinterwordspacing
-
 \bibitem{10.1145/1465482.1465560}
 \BIBentryALTinterwordspacing
 G.~M. Amdahl, ``Validity of the single processor approach to achieving large
